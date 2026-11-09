@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--e2jw2j--><!----><title>#4471 · three problems, not one · support kb</title>
+		<style>:root{--bg:#fbfaf7;--fg:#1d1d1b;--muted:#6b6a66;--line:#e3e0d8;--accent:#2f6f5e;--warn:#b4501f;--warn-bg:#fbeee6;--note-bg:#eef5f2;--mono:ui-monospace, "Cascadia Code", Menlo, monospace}@media (prefers-color-scheme:dark){:root{--bg:#171716;--fg:#ecebe6;--muted:#9c9a93;--line:#34332f;--accent:#6fbfa6;--warn:#f0905d;--warn-bg:#3a2418;--note-bg:#1d2c27}}body{background:var(--bg);color:var(--fg);margin:0;font:16px/1.6 system-ui,sans-serif}.kb table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem}.kb th,.kb td{border-bottom:1px solid var(--line);text-align:left;padding:.35rem .5rem}.kb code{font-family:var(--mono);font-size:.88em}.kb a{color:var(--accent)}.kb.svelte-e2jw2j{max-width:760px;margin:0 auto;padding:2rem 16px 4rem}.crumb.svelte-e2jw2j{font:.8rem var(--mono);color:var(--muted);text-decoration:none}h1.svelte-e2jw2j{margin:.25rem 0 .5rem;line-height:1.2}.meta.svelte-e2jw2j{color:var(--muted);flex-wrap:wrap;gap:.5rem 1rem;margin:0;font-size:.85rem;display:flex}.status.svelte-e2jw2j{border:1px solid var(--line);border-radius:99px;padding:0 .6rem}.stale.svelte-e2jw2j{color:var(--warn);font-weight:600}.banner.svelte-e2jw2j{background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:.6rem 1rem}footer.svelte-e2jw2j{color:var(--muted);border-top:1px solid var(--line);margin-top:3rem;padding-top:1rem;font-size:.8rem}
+</style>
+		<style>aside.svelte-17bri61{border-left:4px solid var(--accent);background:var(--note-bg);margin:1rem 0;padding:.5rem 1rem}aside.warn.svelte-17bri61{border-color:var(--warn);background:var(--warn-bg)}
+</style>
+		<style>.stamp.svelte-1280m42{font:.85rem var(--mono);color:var(--muted);margin:2rem 0 0}.stamp.svelte-1280m42 b:where(.svelte-1280m42){color:var(--accent);letter-spacing:.04em}.missing.svelte-1280m42{color:var(--warn)}
+</style>
+  </head>
+  <body>
+    <div style="display: contents"><!--[--><!--[--><!--[0--><!--[--><!--[--><!--[-1--><!--[--><div class="kb svelte-e2jw2j"><header><a class="crumb svelte-e2jw2j" href="https://github.com/ttnsy/what-it-shows/blob/main/src/routes/kb/+page.svx">support desk · kb</a> <h1 class="svelte-e2jw2j">#4471 · three problems, not one</h1> <p class="meta svelte-e2jw2j"><span>owner <b>support desk</b></span> <span class="status open svelte-e2jw2j">open</span> <span class="svelte-e2jw2j">reviewed 2026-11-09 · 0 days ago</span></p></header> <!--[-1--><!--]--> <main><p><a href="https://github.com/ttnsy/what-it-shows/blob/main/src/routes/kb/incidents/4471/+page.svx">#4471</a> says the 412 date reports are one bug: the parser reads
+dates month first. The reports describe <strong>three</strong> problems. The fix queued for #4471 fixes the
+first one only.</p> <aside class="warn svelte-17bri61"><!---->Not one issue. Three problems, three tickets. Keep #4471 open for the parser and track the other
+two on their own tickets.<!----></aside><!----> <h2>The three problems</h2> <table><thead><tr><th>problem</th><th>what the reporter sees</th><th>reports</th><th>fixed by the #4471 fix</th></tr></thead><tbody><tr><td><a href="https://github.com/ttnsy/what-it-shows/issues/1" rel="nofollow">1 · parser reads day-first dates month first</a></td><td>day and month swapped: 7 April arrives as 4 July</td><td><strong>374</strong> from 11 tenants</td><td>yes</td></tr><tr><td><a href="https://github.com/ttnsy/what-it-shows/issues/2" rel="nofollow">2 · booking-v3 form hint says <code>MM/DD/YYYY</code></a></td><td>day and month swapped, on bookings typed into the booking-v3 form</td><td><strong>33</strong> from 3 tenants</td><td>no</td></tr><tr><td><a href="https://github.com/ttnsy/what-it-shows/issues/3" rel="nofollow">3 · date moves by one day</a></td><td>the right month, one day early or late: Tuesday becomes Monday</td><td><strong>5</strong></td><td>no</td></tr></tbody></table> <!--[-1--><!--]--> <h3>1 · The parser</h3> <p>Ticket: <a href="https://github.com/ttnsy/what-it-shows/issues/1" rel="nofollow">ttnsy/what-it-shows#1</a></p> <p>The shared parser reads every date month first. Every tenant on #4471 writes the day first, so a
+date with a day of 12 or less comes out with day and month swapped. This is what #4471 describes,
+and the queued fix is for this problem.</p> <h3>2 · The booking-v3 hint</h3> <p>Ticket: <a href="https://github.com/ttnsy/what-it-shows/issues/2" rel="nofollow">ttnsy/what-it-shows#2</a></p> <p>Tenants on <code>booking-v3</code> print <code>MM/DD/YYYY</code> under the date field. Their people type what the hint
+says, month first, and the form reads the date the tenant’s way, day first. The result looks the
+same as problem 1, but the parser is not involved: the date is already wrong when the form reads
+it. The parser fix does not touch it. The fix is the hint, or the form’s read order.</p> <p>Intake tagged 41 reports as <code>hint</code>. Intake guesses from the reporter’s browser, not from
+the tenant and the form, so that tag does not count this problem. The count above comes from
+the tenant’s form and the channel the report came in by.</p> <h3>3 · The one-day move</h3> <p>Ticket: <a href="https://github.com/ttnsy/what-it-shows/issues/3" rel="nofollow">ttnsy/what-it-shows#3</a></p> <p>These reports do not describe a swap. The date keeps its month and moves one day: “Tuesday 6
+October showed as Monday”, and one meeting showed as Tuesday in Lisbon and Monday in Toronto.
+That is a time-zone or offset problem in how a date becomes an invite. The desk already noted
+these reports (desk notes, <code>oneDayMove</code>), but the kb still counts them under the parser
+because of their tenant. A parser fix will not change them.</p> <h2>How the count was made</h2> <ul><li>The ticket export has 427 rows, and some reports appear twice because the export’s pages
+overlap. One id is one report: 412 reports.</li> <li>The cause comes from the tenant and the form, as in <code>causes.ts</code>, not from the subject or from
+intake’s tag. All 412 reports came in under 12 different subjects. A subject is not
+a cause.</li> <li>The desk’s one-day notes are taken out first, so each report is in one problem only.</li></ul> <p>The numbers on this page are computed from the data when the page renders. When the desk merges
+more reports into #4471, they change with it.</p> <!--[0--><p class="stamp svelte-1280m42">desk ref <b class="svelte-1280m42">DR-33W6-47CH</b></p><!--]--><!----><!----></main> <footer class="svelte-e2jw2j">Pages are written by people. Tables and charts are built from data at render time.</footer></div><!--]--><!--]--><!--]--><!----><!--]--><!--]--><!--]--><!----> <!--[-1--><!--]--><!--]-->
+			
+			</div>
+  </body>
+</html>

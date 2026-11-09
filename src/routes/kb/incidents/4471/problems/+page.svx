@@ -1,0 +1,97 @@
+---
+layout: runbook
+title: '#4471 · three problems, not one'
+owner: support desk
+status: open
+reviewed: 2026-11-09
+signature: ttnsy
+---
+
+<script>
+  import reports from '#lib/data/reports-4471.json';
+  import notes from '#lib/data/desk-notes.json';
+  import { groupByCause, uniqueById } from '#lib/kb/causes';
+  import { tenantOf } from '#lib/kb/locales';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const TICKET = 4471;
+  const rows = reports.length;
+  const merged = uniqueById(reports).filter((r) => r.mergedInto === TICKET);
+  const isOneDay = (r) => notes.oneDayMove.includes(r.id);
+  const oneDay = merged.filter(isOneDay);
+  const groups = groupByCause(merged.filter((r) => !isOneDay(r)), tenantOf);
+  const count = (cause) => groups.find((g) => g.cause === cause)?.reports.length ?? 0;
+  const tenantsOf = (cause) => groups.find((g) => g.cause === cause)?.tenants ?? 0;
+  const parser = count('parser');
+  const hint = count('hint');
+  const parserTenants = tenantsOf('parser');
+  const hintTenants = tenantsOf('hint');
+  const unplaced = count('unplaced');
+  const subjects = new Set(merged.map((r) => r.subject)).size;
+  const tagHint = merged.filter((r) => r.meta.intakeTag === 'hint').length;
+</script>
+
+[#4471](/kb/incidents/4471) says the {merged.length} date reports are one bug: the parser reads
+dates month first. The reports describe **three** problems. The fix queued for #4471 fixes the
+first one only.
+
+<Callout kind="warn">
+Not one issue. Three problems, three tickets. Keep #4471 open for the parser and track the other
+two on their own tickets.
+</Callout>
+
+## The three problems
+
+| problem | what the reporter sees | reports | fixed by the #4471 fix |
+|---|---|---|---|
+| [1 · parser reads day-first dates month first](https://github.com/ttnsy/what-it-shows/issues/1) | day and month swapped: 7 April arrives as 4 July | **{parser}** from {parserTenants} tenants | yes |
+| [2 · booking-v3 form hint says `MM/DD/YYYY`](https://github.com/ttnsy/what-it-shows/issues/2) | day and month swapped, on bookings typed into the booking-v3 form | **{hint}** from {hintTenants} tenants | no |
+| [3 · date moves by one day](https://github.com/ttnsy/what-it-shows/issues/3) | the right month, one day early or late: Tuesday becomes Monday | **{oneDay.length}** | no |
+
+{#if unplaced}<p>{unplaced} reports come from tenants that are not on file. They have no cause yet.</p>{/if}
+
+### 1 · The parser
+
+Ticket: [ttnsy/what-it-shows#1](https://github.com/ttnsy/what-it-shows/issues/1)
+
+The shared parser reads every date month first. Every tenant on #4471 writes the day first, so a
+date with a day of 12 or less comes out with day and month swapped. This is what #4471 describes,
+and the queued fix is for this problem.
+
+### 2 · The booking-v3 hint
+
+Ticket: [ttnsy/what-it-shows#2](https://github.com/ttnsy/what-it-shows/issues/2)
+
+Tenants on `booking-v3` print `MM/DD/YYYY` under the date field. Their people type what the hint
+says, month first, and the form reads the date the tenant's way, day first. The result looks the
+same as problem 1, but the parser is not involved: the date is already wrong when the form reads
+it. The parser fix does not touch it. The fix is the hint, or the form's read order.
+
+Intake tagged {tagHint} reports as `hint`. Intake guesses from the reporter's browser, not from
+the tenant and the form, so that tag does not count this problem. The count above comes from
+the tenant's form and the channel the report came in by.
+
+### 3 · The one-day move
+
+Ticket: [ttnsy/what-it-shows#3](https://github.com/ttnsy/what-it-shows/issues/3)
+
+These reports do not describe a swap. The date keeps its month and moves one day: "Tuesday 6
+October showed as Monday", and one meeting showed as Tuesday in Lisbon and Monday in Toronto.
+That is a time-zone or offset problem in how a date becomes an invite. The desk already noted
+these reports (desk notes, `oneDayMove`), but the kb still counts them under the parser
+because of their tenant. A parser fix will not change them.
+
+## How the count was made
+
+- The ticket export has {rows} rows, and some reports appear twice because the export's pages
+  overlap. One id is one report: {merged.length} reports.
+- The cause comes from the tenant and the form, as in `causes.ts`, not from the subject or from
+  intake's tag. All {merged.length} reports came in under {subjects} different subjects. A subject is not
+  a cause.
+- The desk's one-day notes are taken out first, so each report is in one problem only.
+
+The numbers on this page are computed from the data when the page renders. When the desk merges
+more reports into #{TICKET}, they change with it.
+
+<RenderStamp {signature} />
