@@ -10,17 +10,19 @@ signature: ttnsy
 <script>
   import reports from '#lib/data/reports-4471.json';
   import notes from '#lib/data/desk-notes.json';
-  import { groupByCause, uniqueById } from '#lib/kb/causes';
+  import { groupByCause, readAs, uniqueById } from '#lib/kb/causes';
   import { tenantOf } from '#lib/kb/locales';
+  import CauseTable from '#lib/kb/CauseTable.svelte';
   import Callout from '#lib/kb/Callout.svelte';
   import RenderStamp from '#lib/kb/RenderStamp.svelte';
 
   const TICKET = 4471;
   const rows = reports.length;
   const merged = uniqueById(reports).filter((r) => r.mergedInto === TICKET);
-  const isOneDay = (r) => notes.oneDayMove.includes(r.id);
-  const oneDay = merged.filter(isOneDay);
-  const groups = groupByCause(merged.filter((r) => !isOneDay(r)), tenantOf);
+  // The desk's own view: every report filed under its cause by tenant and form, the desk's
+  // one-day notes counted where they are filed (causes.ts, readAs).
+  const groups = groupByCause(merged, tenantOf);
+  const oneDay = groups.reduce((n, g) => n + readAs(g, notes.oneDayMove), 0);
   const count = (cause) => groups.find((g) => g.cause === cause)?.reports.length ?? 0;
   const tenantsOf = (cause) => groups.find((g) => g.cause === cause)?.tenants ?? 0;
   const parser = count('parser');
@@ -47,7 +49,7 @@ two on their own tickets.
 |---|---|---|---|
 | [1 · parser reads day-first dates month first](https://github.com/ttnsy/what-it-shows/issues/1) | day and month swapped: 7 April arrives as 4 July | **{parser}** from {parserTenants} tenants | yes |
 | [2 · booking-v3 form hint says `MM/DD/YYYY`](https://github.com/ttnsy/what-it-shows/issues/2) | day and month swapped, on bookings typed into the booking-v3 form | **{hint}** from {hintTenants} tenants | no |
-| [3 · date moves by one day](https://github.com/ttnsy/what-it-shows/issues/3) | the right month, one day early or late: Tuesday becomes Monday | **{oneDay.length}** | no |
+| [3 · date moves by one day](https://github.com/ttnsy/what-it-shows/issues/3) | the right month, one day early or late: Tuesday becomes Monday | **{oneDay}**, counted inside problem 1 | no |
 
 {#if unplaced}<p>{unplaced} reports come from tenants that are not on file. They have no cause yet.</p>{/if}
 
@@ -79,8 +81,9 @@ Ticket: [ttnsy/what-it-shows#3](https://github.com/ttnsy/what-it-shows/issues/3)
 These reports do not describe a swap. The date keeps its month and moves one day: "Tuesday 6
 October showed as Monday", and one meeting showed as Tuesday in Lisbon and Monday in Toronto.
 That is a time-zone or offset problem in how a date becomes an invite. The desk already noted
-these reports (desk notes, `oneDayMove`), but the kb still counts them under the parser
-because of their tenant. A parser fix will not change them.
+these reports (desk notes, `oneDayMove`). The desk files them under the parser by tenant, so the
+{parser} parser reports include these {oneDay}. They need their own ticket, because a parser fix
+will not change them.
 
 ## How the count was made
 
@@ -89,7 +92,12 @@ because of their tenant. A parser fix will not change them.
 - The cause comes from the tenant and the form, as in `causes.ts`, not from the subject or from
   intake's tag. All {merged.length} reports came in under {subjects} different subjects. A subject is not
   a cause.
-- The desk's one-day notes are taken out first, so each report is in one problem only.
+- The counts are the desk's own view, as exported: the table below. The one-day reports stay
+  where the desk files them, under the parser, and are counted again on their own ticket.
+
+## The desk's view
+
+<CauseTable ticket={TICKET} />
 
 The numbers on this page are computed from the data when the page renders. When the desk merges
 more reports into #{TICKET}, they change with it.
