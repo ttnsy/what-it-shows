@@ -27,6 +27,7 @@ signature: ttnsy
   const tenantsOf = (cause) => groups.find((g) => g.cause === cause)?.tenants ?? 0;
   const parser = count('parser');
   const hint = count('hint');
+  const parserOnly = parser - oneDay;
   const parserTenants = tenantsOf('parser');
   const hintTenants = tenantsOf('hint');
   const unplaced = count('unplaced');
@@ -47,9 +48,9 @@ two on their own tickets.
 
 | problem | what the reporter sees | reports | fixed by the #4471 fix |
 |---|---|---|---|
-| [1 · parser reads day-first dates month first](https://github.com/ttnsy/what-it-shows/issues/1) | day and month swapped: 7 April arrives as 4 July | **{parser}** from {parserTenants} tenants | yes |
+| [1 · parser reads day-first dates month first](https://github.com/ttnsy/what-it-shows/issues/1) | day and month swapped: 7 April arrives as 4 July | **{parserOnly}** from {parserTenants} tenants | yes |
 | [2 · booking-v3 form hint says `MM/DD/YYYY`](https://github.com/ttnsy/what-it-shows/issues/2) | day and month swapped, on bookings typed into the booking-v3 form | **{hint}** from {hintTenants} tenants | no |
-| [3 · date moves by one day](https://github.com/ttnsy/what-it-shows/issues/3) | the right month, one day early or late: Tuesday becomes Monday | **{oneDay}**, counted inside problem 1 | no |
+| [3 · date moves by one day](https://github.com/ttnsy/what-it-shows/issues/3) | the right month, one day early or late: Tuesday becomes Monday | **{oneDay}** | no |
 
 {#if unplaced}<p>{unplaced} reports come from tenants that are not on file. They have no cause yet.</p>{/if}
 
@@ -81,9 +82,10 @@ Ticket: [ttnsy/what-it-shows#3](https://github.com/ttnsy/what-it-shows/issues/3)
 These reports do not describe a swap. The date keeps its month and moves one day: "Tuesday 6
 October showed as Monday", and one meeting showed as Tuesday in Lisbon and Monday in Toronto.
 That is a time-zone or offset problem in how a date becomes an invite. The desk already noted
-these reports (desk notes, `oneDayMove`). The desk files them under the parser by tenant, so the
-{parser} parser reports include these {oneDay}. They need their own ticket, because a parser fix
-will not change them.
+these reports (desk notes, `oneDayMove`). The desk's view files them under the parser by tenant.
+They are a different problem, and a parser fix will not change them, so they have their own
+ticket: {parser} parser reports in the desk's view are {parserOnly} for problem 1 and {oneDay} for
+problem 3.
 
 ## How the count was made
 
@@ -92,8 +94,8 @@ will not change them.
 - The cause comes from the tenant and the form, as in `causes.ts`, not from the subject or from
   intake's tag. All {merged.length} reports came in under {subjects} different subjects. A subject is not
   a cause.
-- The counts are the desk's own view, as exported: the table below. The one-day reports stay
-  where the desk files them, under the parser, and are counted again on their own ticket.
+- The counts come from the desk's own view, as exported: the table below. Its one-day notes
+  are moved from the parser to problem 3, so each report is in one problem only.
 
 ## The desk's view
 
